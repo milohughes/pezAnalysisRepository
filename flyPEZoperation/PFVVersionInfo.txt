@@ -1,0 +1,116 @@
+#Photron Fastcam Viewer Version Information File
+Saved Date : 2013/3/27
+Saved Time : 21:59
+
+#Photron Fastcam Viewer Version Information:
+PFV.exe : 3, 3, 7, 0
+1024PCIInst.exe : 1.1.0.0
+512PCIInst.exe : 1.1.0.0
+D1024PCI.dll : 1, 0, 3, 3
+D512PCI.dll : 1, 0, 2, 2
+DAPX.dll : 1, 0, 2, 5
+DAPXRS.dll : 1, 0, 4, 4
+DBC2.dll : 1, 0, 1, 7
+DIDPEX.dll : 1, 0, 4, 0
+DMC1.dll : 1, 0, 3, 6
+DMH4.dll : 1, 0, 3, 8
+DSA1.dll : 1, 0, 6, 0
+DSA2.dll : 1, 0, 4, 7
+DSA3.dll : 1, 0, 5, 7
+DSA4.dll : 1, 0, 1, 9
+DSA5.dll : 1, 0, 4, 3
+DSA6.dll : 1, 0, 0, 9
+DSA7.dll : 1, 0, 2, 2
+DSAX.dll : 1, 0, 2, 0
+DSAX_B.dll : 1, 0, 2, 3
+DUL512.dll : 1, 0, 2, 6
+GEthLib.dll : 0, 1, 2, 8
+I1394.dll : 1, 0, 0, 7
+IGETHER.dll : 1, 0, 3, 0
+ijl20.dll : 2,0,18,50
+IOPTICAL.dll : 1, 0, 0, 6
+IPCI.dll : 1, 0, 0, 8
+ippcce9-6.1.dll : 6,1,137,734
+ippccem64t-6.1.dll : 6,1,137,734
+ippccm7-6.1.dll : 6,1,137,734
+ippccmx-6.1.dll : 6,1,137,734
+ippccn8-6.1.dll : 6,1,137,734
+ippccu8-6.1.dll : 6,1,137,734
+ippccy8-6.1.dll : 6,1,137,734
+ippcoreem64t-6.1.dll : 6,1,137,790
+ippcve9-6.1.dll : 6,1,137,811
+ippcvem64t-6.1.dll : 6,1,137,811
+ippcvm7-6.1.dll : 6,1,137,811
+ippcvmx-6.1.dll : 6,1,137,811
+ippcvn8-6.1.dll : 6,1,137,811
+ippcvu8-6.1.dll : 6,1,137,811
+ippcvy8-6.1.dll : 6,1,137,811
+ippie9-6.1.dll : 6,1,137,825
+ippiem64t-6.1.dll : 6,1,137,825
+ippim7-6.1.dll : 6,1,137,825
+ippimx-6.1.dll : 6,1,137,825
+ippin8-6.1.dll : 6,1,137,825
+ippiu8-6.1.dll : 6,1,137,825
+ippiy8-6.1.dll : 6,1,137,825
+ippje9-6.1.dll : 6,1,137,803
+ippjem64t-6.1.dll : 6,1,137,803
+ippjm7-6.1.dll : 6,1,137,803
+ippjmx-6.1.dll : 6,1,137,803
+ippjn8-6.1.dll : 6,1,137,803
+ippju8-6.1.dll : 6,1,137,803
+ippjy8-6.1.dll : 6,1,137,803
+ippsce9-6.1.dll : 6,1,137,798
+ippscem64t-6.1.dll : 6,1,137,798
+ippscm7-6.1.dll : 6,1,137,798
+ippscmx-6.1.dll : 6,1,137,798
+ippscn8-6.1.dll : 6,1,137,798
+ippscu8-6.1.dll : 6,1,137,798
+ippscy8-6.1.dll : 6,1,137,798
+ippse9-6.1.dll : 6,1,137,827
+ippsem64t-6.1.dll : 6,1,137,827
+ippsm7-6.1.dll : 6,1,137,827
+ippsmx-6.1.dll : 6,1,137,827
+ippsn8-6.1.dll : 6,1,137,827
+libguide40.dll : 20071022
+libiomp5md.dll : 20071022
+libpng13.dll : 1.2.10
+PDCLIB.dll : 1, 1, 3, 0
+PDCPOLA.dll : 1, 0, 1, 0
+PICLIB.dll : 1, 0, 6, 5
+PluginCamera.dll : 1.3.7.0
+PluginDataSave.dll : 1.3.7.0
+PluginFileView.dll : 1.3.7.0
+zlib1.dll : 1.2.3
+PluginAngle.pdll : 1.1.9.5
+PluginBatchDataConverter.pdll : 1.0.0.3
+PluginComm.pdll : 1.0.1.1
+PluginDistance.pdll : 1.1.9.4
+PluginHDR.pdll : 1, 0, 0, 0
+PluginHistogram.pdll : 1, 0, 5, 1
+PluginLensControl.pdll : 1, 0, 3, 0
+PluginLineProfile.pdll : 1, 0, 2, 5
+PluginMotionDetector.pdll : 1, 0, 0, 0
+PluginPolarization.pdll : 1.0.0.7
+PluginPseudoColor.pdll : 1, 0, 0, 0
+
+#System Information:
+OS : Windows 7 Professional (x64) Service Pack 1  (version 6.1 Build 7601)
+Memory : 24573MB RAM
+Processor : Intel(R) Xeon(R) CPU           E5520  @ 2.27GHz
+DirectX : DirectX 11
+
+
+#Device Information:
+Number of devices : 1
+
+#Device 1:
+Device Name : FASTCAM SA4 model 500K-M1
+Device ID : 010
+Interface : Gigabit Ethernet
+IP Address : 192.168.0.10
+Subnet Mask : 255.255.255.0
+Gateway Address : 0.0.0.0
+Firmware : 2.12
+
+
+END
