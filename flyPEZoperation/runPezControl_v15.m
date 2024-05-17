@@ -1619,7 +1619,10 @@ disp('camStartupFun passed')
         end
         if itemStates.isRun.focus, focusFun, end
         if itemStates.isRun.flydetect, flyDetect, end
-        if itemStates.isRun.controller, updateGatePlot, end
+        if itemStates.isRun.controller
+            hOpen1Callback([],[])
+            updateGatePlot
+        end
         drawnow
         if itemStates.isRun.liverecord
             im2write = screencapture;
