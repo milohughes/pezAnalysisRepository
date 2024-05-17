@@ -933,7 +933,7 @@ detectTabs = 0;
 rateCounter = 0;
 tunnelFlyCt = [];
 prismFlyCt = [];
-MCUvar_gatePos = [];
+MCUvar_gatePos = [0];
 MCUvar_gateState = [];
 MCUvar_gateBound =  [];
 MCUvar_gateData = [];
@@ -1620,7 +1620,6 @@ disp('camStartupFun passed')
         if itemStates.isRun.focus, focusFun, end
         if itemStates.isRun.flydetect, flyDetect, end
         if itemStates.isRun.controller
-            hOpen1Callback([],[])
             updateGatePlot
         end
         drawnow
