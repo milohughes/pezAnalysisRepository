@@ -1589,68 +1589,17 @@ flip_genotypes('off')
         browsegenotypes
     end
     function browsegenotypes(~,~)
-        set(browse_pan,'Visible','on','string','','position',[0 .980 .300 .025],'fontweight','bold');
-        flip_protocol('off')
-        collection_buttons('off','All')
-        set(hBrowseAll,'visible','on','enable','on')
-        set(hBrowsePartial,'visible','on','enable','on')
-        set(hshowAll,'visible','on','enable','on')
-        set(hshowparents,'visible','on','enable','on')
-        set(hshowgenotypes,'visible','on','enable','on')
-        
-        if isempty(Saved_Genotypes)              %if no names, then nothing to browse
-            set(status_name,'string','No saved genotypes to browse');
-            return
-        end
-        if strcmp(browseflag,'All')
-            genotype_subset = Saved_Genotypes;
-        elseif strcmp(browseflag,'User')
-            collect_value = get(hTdropdown(2),'value');
-            collections = get(hTdropdown(2),'string');
-            collections = collections(collect_value);
-            
-            all_experiments = get(Saved_Experiments,'ObsNames');
-            matching = cellfun(@(x) ismember(x(1:4),collections),all_experiments);
-            matching = cellfun(@(x) x(5:12),all_experiments(matching),'uniformoutput',false);
-            matching = cellfun(@(x) sum(cell2mat(strfind(matching,x))),get(Saved_Genotypes,'ObsNames'),'uniformoutput',false);
-            genotype_subset = Saved_Genotypes(cell2mat(matching) > 0,:);
-        end
-        geno_dim = length(genotype_subset(:,1));
-        gender_cat = cell(geno_dim,1);
-        balance_cat = cell(geno_dim,1);
-        
-        gender_cat(cell2mat(genotype_subset.Males) == 1 & cell2mat(genotype_subset.Females) == 0) = {'Male Flies only'};
-        gender_cat(cell2mat(genotype_subset.Males) == 0 & cell2mat(genotype_subset.Females) == 1) = {'Female Flies only'};
-        gender_cat(cell2mat(genotype_subset.Males) == 1 & cell2mat(genotype_subset.Females) == 1) = {'Male and Female Flies'};
-        
-        balance_cat(cell2mat(genotype_subset.No_Balancers) == 1) = {'No Balancers Selected'};
-        balance_cat(cell2mat(genotype_subset.Chromosome1) == 1 & cell2mat(genotype_subset.Chromosome2) == 0 & cell2mat(genotype_subset.Chromosome3) == 0) = {'Balancers on Chromosome 1 only'};
-        balance_cat(cell2mat(genotype_subset.Chromosome1) == 0 & cell2mat(genotype_subset.Chromosome2) == 1 & cell2mat(genotype_subset.Chromosome3) == 0) = {'Balancers on Chromosome 2 only'};
-        balance_cat(cell2mat(genotype_subset.Chromosome1) == 0 & cell2mat(genotype_subset.Chromosome2) == 0 & cell2mat(genotype_subset.Chromosome3) == 1) = {'Balancers on Chromosome 3 only'};
-        balance_cat(cell2mat(genotype_subset.Chromosome1) == 1 & cell2mat(genotype_subset.Chromosome2) == 1 & cell2mat(genotype_subset.Chromosome3) == 1) = {'Balancers on Chromosomes 1,2 and 3'};
-        balance_cat(cell2mat(genotype_subset.Chromosome1) == 1 & cell2mat(genotype_subset.Chromosome2) == 1 & cell2mat(genotype_subset.Chromosome3) == 0) = {'Balancers on Chromosomes 1 and 2'};
-        balance_cat(cell2mat(genotype_subset.Chromosome1) == 1 & cell2mat(genotype_subset.Chromosome2) == 0 & cell2mat(genotype_subset.Chromosome3) == 1) = {'Balancers on Chromosomes 1 and 3'};
-        balance_cat(cell2mat(genotype_subset.Chromosome1) == 0 & cell2mat(genotype_subset.Chromosome2) == 2 & cell2mat(genotype_subset.Chromosome3) == 1) = {'Balancers on Chromosomes 2 and 3'};
-        
-        if isempty(genotype_subset)
-            outstring = 'No Genotypes are saved for this User';
-        else
-            switch showflag
-                case 'All'
-                    new_string = cellfun(@(v,w,x,y,z,a,b) sprintf('           Genotype_ID:    %s \n ParentA_Name:  %s\n     Genotype:  %s\nParentB_Name:  %s\n     Genotype:  %s\nGenders Used:   %s\nBalancers Used:   %s\n',v,w,x,y,z,a,b),...
-                        get(genotype_subset,'ObsNames'),genotype_subset.ParentA_name,genotype_subset.ParentA_genotype,genotype_subset.ParentB_name,genotype_subset.ParentB_genotype,gender_cat,balance_cat,'UniformOutput',false);
-                case 'Parents'
-                    new_string = cellfun(@(v,w,x) sprintf('           Genotype_ID:    %s \n ParentA_Name:  %s\nParentB_Name:  %s\n',v,w,x),...
-                        get(genotype_subset,'ObsNames'),genotype_subset.ParentA_name,genotype_subset.ParentB_name,'UniformOutput',false);
-                case 'Genotypes'
-                    new_string = cellfun(@(v,w,x) sprintf('           Genotype_ID:    %s \n ParentA_Genotype:  %s\nParentB_Genotype:  %s\n',v,w,x),...
-                        get(genotype_subset,'ObsNames'),genotype_subset.ParentA_genotype,genotype_subset.ParentB_genotype,'UniformOutput',false);
-            end
-            [outstring,~] = textwrap(hbrowselist,new_string);
-        end
-        set(hbrowselist,'visible','on','string',outstring,'min',0,'max',2,'HorizontalAlignment','left','style','listbox','callback',@getgeno_entry,'value',1)
-        set(hTable,'visible','off')
-        set(status_name,'string','Searching Complete')
+        genotypeCell = dataset2cell(Saved_Genotypes);
+        varNames = genotypeCell(1,:);
+        varNames = varNames(:,2:end);
+        genotypeCell = genotypeCell(2:end,:);
+        rowNames = genotypeCell(:,1);
+        genotypeCell = genotypeCell(:,2:end);
+
+        set(hTable,'Data',genotypeCell(:,:),'ColumnName',varNames,...
+            'RowName',rowNames,'units','normalized','visible','on');
+        set(hTable,'position',[0 0 .3 1])
+        set(browse_pan,'Visible','off','string','','position',[0 .980 .300 .025],'fontweight','bold');
     end
     function getgeno_entry(~,~)
         index = get(hbrowselist,'value');
