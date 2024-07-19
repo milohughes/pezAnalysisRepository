@@ -127,7 +127,7 @@ if ~ismember(jarpath,javaclasspath)
 end
 
 drv = com.mysql.jdbc.Driver;
-url = 'jdbc:mysql://prd-db.int.janelia.org:3306/flyboy?user=flyfRead&password=flyfRead';
+url = 'jdbc:mysql://flyrobotmysql1.zi.columbia.edu:3306/robotdb?user=robotRead&password=robotRead';
 try
     con = drv.connect(url,'');
     stm = con.createStatement;
@@ -2059,12 +2059,9 @@ flip_genotypes('off')
             return
         end
         
-        qry_line_name = ['select * from StockFinder where Stock_Name like ''%',search_str,'%''',''];
-        qry_line_ID = ['select * from StockFinder where RobotIDBarcode like ''%',search_str,'%''',''];
-        qry_line_other = ['select * from StockFinder where GENOTYPE_GSI_NAME_PLATEWELL like ''%',search_str,'%''',''];
-        
-        qry_effect_name = ['select * from Reporter where Label_Name like ''%',search_str,'%''',''];
-        qry_effect_ID = ['select * from Reporter where Barcode like ''%',search_str,'%''',''];
+        qry_line_name = ['select * from stockfinder where Stock_Name like ''%',search_str,'%''',''];
+        qry_line_ID = ['select * from stockfinder where RobotID like ''%',search_str,'%''',''];
+        qry_line_other = ['select * from stockfinder where Genotype_GSI_Name_PlateWell like ''%',search_str,'%''',''];
         
         res = stm.executeQuery(qry_line_name);
         counter = 1;
@@ -2103,31 +2100,7 @@ flip_genotypes('off')
             end
             counter = counter + 1;
         end
-        
-        res = stm.executeQuery(qry_effect_name);
-        while res.next
-            output = {char(res.getString(3)), char(res.getString(2)),' '};
-            if isempty(output)
-                continue
-            elseif counter == 1
-                genotype_list = output;
-            else
-                genotype_list = [output;genotype_list];
-            end
-            counter = counter + 1;
-        end
-        res = stm.executeQuery(qry_effect_ID);
-        while res.next
-            output = {char(res.getString(3)), char(res.getString(2)),' '};
-            if isempty(output)
-                continue
-            elseif counter == 1
-                genotype_list = output;
-            else
-                genotype_list = [output;genotype_list];
-            end
-            counter = counter + 1;
-        end
+
         if isempty(genotype_list)
             var_names = [{'Robot_ID'},{'Stock_Name'},{'Genotype'}];
             varspecs = cell(0,numel(var_names));
