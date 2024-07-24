@@ -1596,6 +1596,9 @@ flip_genotypes('off')
         rowNames = genotypeCell(:,1);
         genotypeCell = genotypeCell(:,2:end);
 
+        set(hbrowselist,'visible','off','string','','min',0,'max',2,'HorizontalAlignment','left','style','listbox','callback',@getgeno_entry,'value',1)
+        set(hTable,'visible','off')
+
         set(hTable,'Data',genotypeCell(:,:),'ColumnName',varNames,...
             'RowName',rowNames,'units','normalized','visible','on');
         set(hTable,'position',[0 0 .3 1])
