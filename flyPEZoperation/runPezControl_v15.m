@@ -3957,7 +3957,7 @@ function hManualSetROIdown(~,~)
             case '$FC,'
                 MCUvar_inpline = fscanf(sPez);
             case '$ID,'
-                MCUvar_gateData = fread(sPez,128);
+                MCUvar_gateData = round(fread(sPez,128).*(127/253));
                 fscanf(sPez);
             case '$TD,'
                 MCUvar_htData = fscanf(sPez);
