@@ -777,7 +777,7 @@ set(hDetectReadout.textbox,'fontunits','normalized')
 whiteCt = [];
 initVersion = 'reset';
 set(hPezRandom.aziFly,'enable','inactive','backgroundcolor',backC);
-visStimOptions = dir(fullfile(variablesDir,'visual_stimuli_pez3005'));
+visStimOptions = dir(fullfile(variablesDir,'visual_stimuli'));
 visStimOptions = {visStimOptions(3:end).name,'Crosshairs','Calibration','Grid','Full on',...
     'Full off','RGB Order test','Disk Size Measurement','None'};
 visStimPop = uicontrol(hSubPnl(12),'style','popupmenu','units','normalized',...
@@ -1318,7 +1318,7 @@ disp('camStartupFun passed')
                 calibrateCallback
             end
             %preparing visual stimulus
-            visStimOptions = dir(fullfile(variablesDir,'visual_stimuli_pez3005'));
+            visStimOptions = dir(fullfile(variablesDir,'visual_stimuli'));
             visStimOptions = {visStimOptions(3:end).name,'Crosshairs','Calibration','Grid','Full on',...
                 'Full off','RGB Order test','Disk Size Measurement','None'};
             
@@ -3470,7 +3470,7 @@ function hManualSetROIdown(~,~)
         else
             set(hPezButn.display,'enable','on')
         end
-        visStimOptions = dir(fullfile(variablesDir,'visual_stimuli_pez3005'));
+        visStimOptions = dir(fullfile(variablesDir,'visual_stimuli'));
         visStimOptions = {visStimOptions(3:end).name,'Crosshairs','Calibration','Grid','Full on',...
             'Full off','RGB Order test','Disk Size Measurement','None'};
         set(visStimPop,'String',visStimOptions)
