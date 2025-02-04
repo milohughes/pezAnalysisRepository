@@ -8,8 +8,20 @@ repositoryDir = fullfile('C:','Users',localUserName,'Documents',repositoryName);
 fileDir = fscanf(fopen(fullfile(repositoryDir,'flyPEZanalysis','pezFilePath.txt')),'%s');
 variablesDir = fullfile(fileDir,'pez3000_variables');
 
-stimLoad = load(fullfile(variablesDir,'visual_stimuli_pez3005',fileName));
-stimulusStruct = stimLoad.stimulusStruct;
+%[~, comp_name] = system('hostname');
+comp_name = getenv('COMPUTERNAME');
+%comp_name = comp_name(1:end-1); %Remove trailing character.
+compDataPath = fullfile(variablesDir,'computer_info.xlsx');
+compData = dataset('XLSFile',compDataPath);
+compRef = find(strcmp(compData.stimulus_computer_name,comp_name));
+
+if compRef == 5
+    stimLoad = load(fullfile(variablesDir,'visual_stimuli_pez3005',fileName));
+    stimulusStruct = stimLoad.stimulusStruct;
+else
+    stimLoad = load(fullfile(variablesDir,'visual_stimuli',fileName));
+    stimulusStruct = stimLoad.stimulusStruct;
+end
 
 %%%%% Establish variables needed in stimulus presentation
 stimEleForProc = stimStruct.stimEleForProc;
@@ -212,12 +224,15 @@ end
 
 
 %%% Flicker preparation
-%The following two lines work for RGB order [1 2 3]
-%stimRefImageWA = uint8(cat(3,zeros(5)+255,zeros(5)+10,zeros(5)+255));
-%stimRefImageWB = uint8(cat(3,zeros(5)+10,zeros(5)+255,zeros(5)+10));
-%The following two lines works for RGB order [2 3 1]
- stimRefImageWA = uint8(cat(3,zeros(5)+10,zeros(5)+255,zeros(5)+255));
- stimRefImageWB = uint8(cat(3,zeros(5)+255,zeros(5)+10,zeros(5)+10));
+if compRef == 5
+    %The following two lines work for RGB order [1 2 3] (Pez 5)
+    stimRefImageWA = uint8(cat(3,zeros(5)+255,zeros(5)+10,zeros(5)+255));
+    stimRefImageWB = uint8(cat(3,zeros(5)+10,zeros(5)+255,zeros(5)+10));
+else
+    %The following two lines works for RGB order [2 3 1] (Pez 1-4)
+    stimRefImageWA = uint8(cat(3,zeros(5)+10,zeros(5)+255,zeros(5)+255));
+    stimRefImageWB = uint8(cat(3,zeros(5)+255,zeros(5)+10,zeros(5)+10));
+end
 stimRefImCell = {stimRefImageWA,stimRefImageWB};
 stimRefRefs = repmat([1 2]',ceil(frameCt/2),1);
 stimRefRefs = stimRefRefs(:);
