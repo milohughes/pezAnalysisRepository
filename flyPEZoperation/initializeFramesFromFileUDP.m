@@ -18,9 +18,11 @@ compRef = find(strcmp(compData.stimulus_computer_name,comp_name));
 if compRef == 5
     stimLoad = load(fullfile(variablesDir,'visual_stimuli_pez3005',fileName));
     stimulusStruct = stimLoad.stimulusStruct;
-else
+elseif comRef == 1 || compRef == 2 || compRef == 3 || compRef == 4
     stimLoad = load(fullfile(variablesDir,'visual_stimuli',fileName));
     stimulusStruct = stimLoad.stimulusStruct;
+else
+    error('ERROR: Computer Name Not Found. Check Lines 18-26 of initializeFramesFromFileUDP')    
 end
 
 %%%%% Establish variables needed in stimulus presentation
@@ -228,10 +230,12 @@ if compRef == 5
     %The following two lines work for RGB order [1 2 3] (Pez 5)
     stimRefImageWA = uint8(cat(3,zeros(5)+255,zeros(5)+10,zeros(5)+255));
     stimRefImageWB = uint8(cat(3,zeros(5)+10,zeros(5)+255,zeros(5)+10));
-else
+elseif compRef == 1 || compRef == 2 || compRef == 3 || compRef == 4
     %The following two lines works for RGB order [2 3 1] (Pez 1-4)
     stimRefImageWA = uint8(cat(3,zeros(5)+10,zeros(5)+255,zeros(5)+255));
     stimRefImageWB = uint8(cat(3,zeros(5)+255,zeros(5)+10,zeros(5)+10));
+else
+error('ERROR: Computer Name Not Found. Check Lines 229-239 of initializeFramesFromFileUDP')    
 end
 stimRefImCell = {stimRefImageWA,stimRefImageWB};
 stimRefRefs = repmat([1 2]',ceil(frameCt/2),1);
