@@ -27,8 +27,7 @@ var_intensity = 50;
 vPulse = [];
 zPulse = [];
 aPulse = [];
-saveDir = [filesep filesep 'DM11' filesep 'cardlab' filesep,...
-    'pez3000_variables' filesep 'photoactivation_stimuli'];
+saveDir = 'Z:\hhmiData\dm11\cardlab\pez3000_variables\photoactivation_stimuli';
 
 % Setting up figure and graph
 pulseGui_fig = figure('NumberTitle', 'off', 'MenuBar', 'None',...
@@ -128,7 +127,7 @@ uicontrol(pulseGui_fig,'Style','text','string','UserName:','Units','normalized',
     'FontWeight', 'Bold', 'backgroundColor', get(pulseGui_fig, 'color'),...
     'HorizontalAlignment','left','position',[0.6 0.15 0.1 0.05],...
     'fontunits','normalized','HandleVisibility','off');
-userPath = '\\DM11\cardlab\Pez3000_Gui_folder\Gui_saved_variables\Saved_User_names.mat';
+userPath = 'Z:\hhmiData\dm11\cardlab\Pez3000_Gui_folder\Gui_saved_variables\Saved_User_names.mat';;
 if exist(userPath,'file')
     userLoading = load(userPath);
     Saved_User_names = userLoading.Saved_User_names;
