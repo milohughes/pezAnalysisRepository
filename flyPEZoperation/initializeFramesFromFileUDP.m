@@ -18,7 +18,7 @@ compRef = find(strcmp(compData.stimulus_computer_name,comp_name));
 if compRef == 5
     stimLoad = load(fullfile(variablesDir,'visual_stimuli_pez3005',fileName));
     stimulusStruct = stimLoad.stimulusStruct;
-elseif comRef == 1 || compRef == 2 || compRef == 3 || compRef == 4
+elseif compRef == 1 || compRef == 2 || compRef == 3 || compRef == 4
     stimLoad = load(fullfile(variablesDir,'visual_stimuli',fileName));
     stimulusStruct = stimLoad.stimulusStruct;
 else
