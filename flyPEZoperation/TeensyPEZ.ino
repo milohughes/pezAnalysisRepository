@@ -1,4 +1,4 @@
-// PEZ.INO
+// TeensyPEZ.INO
 // 20160215 sws ID&F HHMI Janelia
 // 
 // Runs the Fly Pez Board J005412
@@ -9,10 +9,18 @@
 #define ORIGINALDAC  // enable this if using original DAC (TLV5638)
 
 // VERSIONS
-#define VERSION "20230326"
+#define VERSION "20231206"
+
+// 20231206 sws
+// - R.Hormigo - Reversed shadow thershold array th[i] respect pixel[i] to allow matlab correct visiualization.
+//   This works with the array placed with its wiring pads placed towards the top end of the assembly, so wires go across the whole array PCB rear.
+//     
+
+// 20230427 sws
+// - switch to PWMservo to stop servo jitter
 
 // 20230326 sws
-// - Teensy 4.0 is too fast without delays in linaer array clock. Add clockDelay
+// - Teensy 4.0 is too fast without delays in linear array clock. Add clockDelay
 // - set test pin low at end if image acq (was setting high)
 
 // 20230322 sws
@@ -85,7 +93,8 @@
 #define CHR 2
 #define IR 1
 
-#include <Servo.h> 
+//#include <Servo.h> 
+#include <PWMServo.h>
 #include <SPI.h>
 #include <Wire.h>
 
@@ -98,7 +107,7 @@ SPISettings DAC(2000000, MSBFIRST, SPI_MODE2);
 #define wakePin     6 // control for vibration motor
 #define enablePin   7 // enables LED and servo powers
 #define csPin       8 // CS for LED control
-#define sweepPin    9 // servo signal for sweep
+#define sweepPin    9  // servo signal for sweep
 #define gatePin     10 // servo signal for gate
 #define MOSIPin     11 // MOSI for ADC and DAC
 #define SCLKPIn     13 // SCLK pin for ADC and DAC
@@ -119,12 +128,12 @@ SPISettings DAC(2000000, MSBFIRST, SPI_MODE2);
 #define IN 2
 #define GATEMOTOR 0
 #define SWPRMOTOR 1
-#define CLOSEDPOS 90 //00//100 //100
+#define CLOSEDPOS 98//RH was 90 //00//100 //100
 #define OPENPOS 75 //default-80/pez1-85/pez2-88/pez3-82/pez4-89
 #define BLOCKPOS (CLOSEDPOS - 4) // 94//default-95/pez1-91/pez2-94/pez3-87/pez4-93
-#define CLEANING 50//default-65/pez1-60/pez2-65/pez3-65/pez4-65
+#define CLEANING 55//RH was 50 and stuck //default-65/pez1-60/pez2-65/pez3-65/pez4-65
 #define SWEEPOFF 180
-#define SWEEPEND 70
+#define SWEEPEND 90
 #define SWEEPCAL 105
 
 //#define GATEMOTOROFF 1700//default-2150/pez1-2150/pez2-1700/pez3-2050/pez4-2150     //adjust to physical location in increments of 50. less makes gate more 'open'
@@ -177,8 +186,8 @@ volatile uint8_t imageTransmit;
 //volatile uint8_t flyRelease;
 volatile uint8_t crFlag;
 
-uint8_t th[128];
-uint8_t pixel[128];
+uint8_t th[128];     //array with shadows (pixels beyond a thershold point)
+uint8_t pixel[128];  //Pixel intensity values in the array
 uint8_t test;
 uint16_t feedback, oldfeedback;
 uint16_t itime;
@@ -207,7 +216,7 @@ volatile uint16_t temp;
 
 uint8_t c;
     uint8_t idx;
-    char  *argv[22];
+
   uint16_t humidity, temperature, oldtemp;
     uint16_t arg1, arg2, arg3, arg4, arg5, arg6;
 //    uint8_t b2,b1,b0; 
@@ -226,21 +235,22 @@ uint8_t c;
     uint8_t countTransmit;
   int fan, gap, shadow, tempCooler, difftemperature;
   uint16_t lightIntensity, coolerIntensity;
-  uint16_t tStamp[22];
-  uint16_t state[22];
+  char  *argv[23]; 
+  uint16_t tStamp[23];
+  uint16_t state[23];
 
   boolean binaryImage = true;
   boolean thImage = false;
   #define  GRAYLEVELS 10
   char GRAY2ASCII[] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
+ 
+  PWMServo sweep;
+  PWMServo gate;
 
-  Servo gate;
-  Servo sweep;
-
-  IntervalTimer motorTimer;
+//  IntervalTimer motorTimer;
   IntervalTimer triggerTimer;
   IntervalTimer onePulseTimer;
-  IntervalTimer lightTimer;
+//  IntervalTimer lightTimer;
   
 
 void xatoi(char * * sp, uint16_t * vp)
@@ -317,7 +327,7 @@ uint8_t median5(int idx)
 void getImage(void)
 {
   uint16_t i;
-  digitalWriteFast(atestPin, HIGH);
+//  digitalWriteFast(atestPin, HIGH);
 //  
   itime = 0;
   // first reset all cells by doing a dummy read
@@ -369,7 +379,7 @@ delayNanoseconds(120); // ADC settling time
 //    rawadc = (rawadc >> 3);  // divide by 8
 //    rawadc &= 0xff; // truncate top bit
 //rawadc = (rawadc >> 4);  // divide by 16
-    pixel[i] =  (uint8_t) rawadc;
+    pixel[i] =  (uint8_t) rawadc; 
     // clock out the next pixel
     digitalWriteFast(aclkPin, HIGH);  // PORTA = 0x40; // SI = 0, CLK = 1
     clockHigh
@@ -383,7 +393,7 @@ delayNanoseconds(120); // ADC settling time
   digitalWriteFast(aclkPin, LOW);   // PORTA = 0x00; // SI = 0, CLK = 0
  // clockDelay
   
-  digitalWriteFast(atestPin, LOW);  //PORTB &= 0xfb; //f
+//  digitalWriteFast(atestPin, LOW);  //PORTB &= 0xfb; //f
    
 //  for (i=0; i<123; i++) // filter results - can't do last 5
 //  {
@@ -445,10 +455,10 @@ void threshold(uint8_t thValue)
   {  
     if (gap)
     {   //finding the end of a gap
-      if (pixel[i] >= thValue) 
+      if (pixel[127-i] >= thValue) //Reversed array by R.Hormigo to follow reversed sensor, needed for matlab to read correctly
       {
         th[i] = 1;               //th[i] set to 1 if pixel is not inside the gap (end boundary is set to 1) 
-        gapEnd[gapCount] = i;
+        gapEnd[gapCount] = 127 - i; //Reversed gate position by M.Hughes, needed for correct position
         if ((gapCount < MAXGAPS) && (gapEnd[gapCount] - gapStart[gapCount] > MINGAPWIDTH))  
           gapCount++;          //search for next gap
         gap = 0;
@@ -460,10 +470,10 @@ void threshold(uint8_t thValue)
     } 
     else 
     {                     //finding the start of a gap
-      if (pixel[i] <= (thValue)) 
+      if (pixel[127-i] <= (thValue))   //Reversed array by R.Hormigo to follow reversed sensor, needed for matlab to read correctly
       {
         th[i] = 0;         
-        gapStart[gapCount] = i;
+        gapStart[gapCount] = 127 - i;
         gap = 1;               //search for end of gap in next i
       } 
       else
@@ -507,6 +517,8 @@ void threshold(uint8_t thValue)
 
 void motorGo(uint8_t motor, uint8_t position)
 {
+//digitalWrite(enablePin, PWR_ON);
+  
   //motor 0 is JP5 - OCR1A - Gate Motor
   //motor 1 is JP6 - OCR1B - Sweeper Motor
   if (position > 100) //Position has a range of 0-100%
@@ -517,22 +529,25 @@ void motorGo(uint8_t motor, uint8_t position)
     //OCR1A = 2000 + (uint16_t)position * 20; //2000 is the initial position of the motor register
     gatePosition = position;
   } 
-  else if (motor == SWPRMOTOR) 
+  else if (motor == SWEEPER) 
   {
+//Serial.println(position);
     if (position == 0) 
     {
       //substitute SWPRMOTOROFF for 2000 - no idea why
-      sweep.write(SWEEPOFF); // OCR1B = SWPRMOTOROFF + (uint16_t)99 * 20; //added the delays to make sure the sweeper actually sweeps and reaches both positions
-      delay(350); //_delay_ms(2500);          //the delays may interfere with the timers in the program
+      sweep.write(SWEEPOFF); // OCR1B = SWPRMOTOROFF + (uint16_t)99 * 20; //added the delays to make sure the sweeper actually sweeps and reaches both positions      
+      delay(100); //_delay_ms(2500);          //the delays may interfere with the timers in the program
       sweep.write(SWEEPEND); //SWPRMOTOROFF + (uint16_t)0 * 20); //OCR1B = SWPRMOTOROFF + (uint16_t)0 * 20;
-      delay(350); //_delay_ms(2500);
+      delay(100); //_delay_ms(2500);
       sweep.write(SWEEPOFF); //SWPRMOTOROFF + (uint16_t)99 * 20); //OCR1B = SWPRMOTOROFF + (uint16_t)99 * 20;
     }
     else if (position == 1) 
     {
-      sweep.write( SWEEPCAL); //SWPRMOTOROFF + (uint16_t) 20 * 20); // OCR1B = ; //used to be (uint16_t) 10 * 20;
+      sweep.write( SWEEPCAL); //SWPRMOTOROFF + (uint16_t) 20 * 20); // OCR1B = ; //used to be (uint16_t) 10 * 20;         
     }     
   }
+
+//digitalWrite(enablePin, PWR_OFF);  
 }
 
 //void motorTimerCB(uint8_t arg) {
@@ -622,8 +637,15 @@ void lights(uint8_t status, uint32_t intensity)
 
 
 intensity = constrain( intensity, 0, 100);
-intensity = 100 - intensity;
-val = intensity * 40;
+if( intensity != 0 )
+{
+  intensity = 100 - intensity;
+  val = intensity * 40;
+}
+else
+{
+  val = 4095; // full off 
+}
 
 //  val = intensity >> 8;
 //  val &= 0x0f;
@@ -724,8 +746,8 @@ void onePulseTimerCB()
 // ===============================
 
 // pulse train and ramp timer
-void lightTimerCB()
-{
+//void lightTimerCB()
+//{
 //  if (run == RUNPULSE)
 //  {
 //    tStamp[tPointer] = *(ptr1 + tPointer);
@@ -792,7 +814,7 @@ void lightTimerCB()
 //    }
 //  }  
      
-}
+//}
 
 // ====================================
 // === C O O L E R   C O N T R O L  ===
@@ -969,7 +991,7 @@ void findGate(void)
     getImage();
     sendImage();
 //   binaryImage = binI;  // back as it was
-//    imageTransmit = 0;   // !!!testing
+//   imageTransmit = 0;   // !!!testing
     threshold(shadow);
     start[0] = gapStart[0]-2;//94 //add extra cushion to gate width so we dont trap legs.
     end[0] = gapEnd[0]+2;//114
@@ -1136,24 +1158,20 @@ void setup()
    
     pinMode(monitorPin, OUTPUT);
     digitalWrite(monitorPin, LOW);
-    
-    digitalWrite(enablePin, PWR_OFF);  // power up DACs
+
+     delay(100);
+ //   digitalWrite(enablePin, PWR_OFF);  // first thing - be sure power is disabled  
     SPI.begin();
 
-    initDAC(); // reset DACs
-    
+    initDAC(); // reset DACs  
     lights(IR,0);
     lights(CHR,0);
  //   lights(3,0);
-    // set up SPI and turn off DAC outputs 
-    SPI.begin();
+
     
-    digitalWrite(enablePin, PWR_ON);  // first thing - be sure power is disabled  
-//    initDAC(); // reset DACs
-//    lights(IR,0);
-//    lights(CHR,0);
-//    lights(3,0);
+   digitalWrite(enablePin, PWR_ON);  // power up LEDs
      
+   digitalWriteFast(atestPin, HIGH);  
      
     // initialize the analog input port
     analogReadRes(8);
@@ -1170,8 +1188,8 @@ void setup()
     Wire.write(0x00);                            // Address the Temperature register 
     Wire.endTransmission();                      // Stop transmitting 
     
+    sweep.attach(sweepPin);  
     gate.attach(gatePin);
-    sweep.attach(sweepPin);
 
     gate.write(CLOSEDPOS); // OPENPOS);    // GATEMOTOROFF + (uint16_t)OPENPOS * 20;;
     sweep.write(SWEEPOFF); // SWPRMOTOROFF + (uint16_t)99 * 20;
@@ -1181,6 +1199,8 @@ void setup()
      // initialize the serial ports
     Serial.begin(250000);  // uart_init(250000);
     Serial1.begin(9600);   // th_init(9600);
+
+ 
 
 // wait for USB connection
 
@@ -1212,10 +1232,8 @@ void setup()
 //    }
 //
 //    while(1);
-
-
      
-    digitalWrite(enablePin, PWR_ON);   // now that outputs are initialized, turn on power
+//    digitalWrite(enablePin, PWR_ON);   // now that outputs are initialized, turn on power
      
     itime = 10000;
     // set up the real time clock
@@ -1233,7 +1251,7 @@ void setup()
   //autoRelease = 0;
   //seconds = 0;
   fan = 0;
-  shadow = 150;  // threshold value
+  shadow = 150;  // threshold value (for a shadow be shadow)
   lightIntensity = 0;
   flyInFront=0;
   tempCooler = 220; //temp in Celcius times 10
@@ -1297,6 +1315,15 @@ void setup()
   flyState[0] = CLOSED; 
   motorGo(GATE1, block[0]);   
   Serial.print("$GE,1,B\r\n");
+
+//  sweep.write(60);
+
+//for(uint8_t pos = 10; pos < 170; pos += 1)  // goes from 10 degrees to 170 degrees 
+//{                                  // in steps of 1 degree 
+//    sweep.write(pos);              // tell servo to go to position in variable 'pos' 
+//    delay(10);                       // waits 15ms for the servo to reach the position 
+//} 
+
 
 //  lightTimer.begin(lightTimerCB, 1024);  // 1.024 msec timer for pulse and ramp
   
@@ -1592,6 +1619,11 @@ void loop()
       {  
         motorGo(SWEEPER, 1);
       } 
+      else if( strcmp(argv[0], "w") == 0)
+      {
+         xatoi(&argv[1], &arg1);
+         sweep.write(arg1);
+      }
       else if (strcmp(argv[0], "F") == 0)                      //find gate
       {  
           findGate();
@@ -1773,6 +1805,9 @@ void loop()
       }
 
     } // endif image 
+
+
+}// end loop
 
 
 }// end loop
