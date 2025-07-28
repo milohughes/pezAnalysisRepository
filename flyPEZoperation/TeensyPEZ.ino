@@ -1,9 +1,9 @@
 // TeensyPEZ.INO
 // 20160215 sws ID&F HHMI Janelia
-// 
+//
 // Runs the Fly Pez Board J005412
 // Converted from FlyPez3000_gate_hard_WRWversion written for the J001155 Board
-// 
+//
 
 // #define DEBUG
 #define ORIGINALDAC  // enable this if using original DAC (TLV5638)
@@ -14,7 +14,7 @@
 // 20231206 sws
 // - R.Hormigo - Reversed shadow thershold array th[i] respect pixel[i] to allow matlab correct visiualization.
 //   This works with the array placed with its wiring pads placed towards the top end of the assembly, so wires go across the whole array PCB rear.
-//     
+//    
 
 // 20230427 sws
 // - switch to PWMservo to stop servo jitter
@@ -32,9 +32,9 @@
 // 20221114 sws
 // - elapsedMillis pulse routine
 
-// 20221109 sws 
+// 20221109 sws
 //  - start to get pulse and ramp working ("Z" command)
-  
+ 
 // 20221003 sws
 // - add in original DAC
 
@@ -48,7 +48,7 @@
 // - comment out testing code from findgate and print statements in threshold routine
 
 // 20220711 sws
-// - change sweep delay from 2500 to 100 
+// - change sweep delay from 2500 to 100
 
 // 20200117 sws
 // - add vibration motor command and control
@@ -57,7 +57,7 @@
 // - new power board runs ADC off Enable Pin so reararnge code a bit, and power on DAC before writing to it
 
 // 20190626 sws
-// - add P command to make pulsed crimson 
+// - add P command to make pulsed crimson
 
 // 20190625 sws
 // - set internal ref each time we write to DAC in case DAC was powered up before CPU
@@ -77,7 +77,7 @@
 // - debugging release
 
 // 20190611 sws
-// - change DAC 
+// - change DAC
 
 // 20190430 sws
 // - add '?' command
@@ -93,7 +93,7 @@
 #define CHR 2
 #define IR 1
 
-//#include <Servo.h> 
+//#include <Servo.h>
 #include <PWMServo.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -114,7 +114,7 @@ SPISettings DAC(2000000, MSBFIRST, SPI_MODE2);
 #define adataPin  A0 // analog signal from linear array
 #define asyncPin  15  //sync pin for linear array
 #define aclkPin   16  //clk pin for linear array
-#define atestPin  17 // test/debug pin 
+#define atestPin  17 // test/debug pin
 #define monitorPin 23 // monitor crimson
 
 
@@ -133,7 +133,7 @@ SPISettings DAC(2000000, MSBFIRST, SPI_MODE2);
 #define BLOCKPOS (CLOSEDPOS - 4) // 94//default-95/pez1-91/pez2-94/pez3-87/pez4-93
 #define CLEANING 55//RH was 50 and stuck //default-65/pez1-60/pez2-65/pez3-65/pez4-65
 #define SWEEPOFF 180
-#define SWEEPEND 90
+#define SWEEPEND 70
 #define SWEEPCAL 105
 
 //#define GATEMOTOROFF 1700//default-2150/pez1-2150/pez2-1700/pez3-2050/pez4-2150     //adjust to physical location in increments of 50. less makes gate more 'open'
@@ -219,7 +219,7 @@ uint8_t c;
 
   uint16_t humidity, temperature, oldtemp;
     uint16_t arg1, arg2, arg3, arg4, arg5, arg6;
-//    uint8_t b2,b1,b0; 
+//    uint8_t b2,b1,b0;
   uint16_t  j;
     int16_t start[1], end[1];
     uint8_t gateOK[1];
@@ -235,7 +235,7 @@ uint8_t c;
     uint8_t countTransmit;
   int fan, gap, shadow, tempCooler, difftemperature;
   uint16_t lightIntensity, coolerIntensity;
-  char  *argv[23]; 
+  char  *argv[23];
   uint16_t tStamp[23];
   uint16_t state[23];
 
@@ -251,23 +251,23 @@ uint8_t c;
   IntervalTimer triggerTimer;
   IntervalTimer onePulseTimer;
 //  IntervalTimer lightTimer;
-  
+ 
 
 void xatoi(char * * sp, uint16_t * vp)
 {
    *vp = atoi(*sp);
 }
-  
+ 
 
 // =================
 // === P A R S E ===
 // =================
 
-void parse(char *line, char **argv) 
+void parse(char *line, char **argv)
 {
 int8_t argCount = 0;
 
-  while (*line != '\0') 
+  while (*line != '\0')
   {       /* if not the end of line ....... */
     while (*line == ',' || *line == ' ' || *line == '\t' || *line == '\n')
       *line++ = '\0';     /* replace commas and white spaces with 0    */
@@ -295,20 +295,20 @@ uint8_t median5(int idx)
      sorted[i] = pixel[idx + i];
      
   for (i = 0; i < 4; i++)
-  {   // Last i elements are already 
+  {   // Last i elements are already
       // in place
      for (j = 0; j < 4 - i; j++)
      {
         if (sorted[j] > sorted[j + 1])
         {
             swap = sorted[j];
-            sorted[j] = sorted[j + 1]; 
+            sorted[j] = sorted[j + 1];
             sorted[j + 1] = swap;
-        }             
-     }           
-  }   
-  
-// Serial.println(); 
+        }            
+     }          
+  }  
+ 
+// Serial.println();
 //  for( i = 0; i < 5; i++)
 //  {
 //     Serial.print( sorted[i]);
@@ -318,8 +318,8 @@ uint8_t median5(int idx)
      
   return sorted[2];
 }
-  
-  
+ 
+ 
 // ==========================
 // === G E T    I M A G E ===
 // ==========================
@@ -331,7 +331,7 @@ void getImage(void)
 //  
   itime = 0;
   // first reset all cells by doing a dummy read
-  digitalWriteFast(asyncPin, HIGH); 
+  digitalWriteFast(asyncPin, HIGH);
   digitalWriteFast(aclkPin, LOW);   // PORTA = 0x80; // SI = 1, CLK = 0
   clockDelay   // min clock time
   digitalWriteFast(aclkPin, HIGH);  // PORTA = 0xc0; // SI = 1, CLK = 1
@@ -339,7 +339,7 @@ void getImage(void)
   digitalWriteFast(asyncPin, LOW);
   digitalWriteFast(aclkPin, LOW);   // PORTA = 0x00; // SI = 0, CLK = 0
   clockDelay
-  for (i=0; i<775; i++) 
+  for (i=0; i<775; i++)
   {
      digitalWriteFast(aclkPin, HIGH);   //  PORTA = 0x40; // SI = 0, CLK = 1
      clockHigh
@@ -349,7 +349,7 @@ void getImage(void)
 //  
 //  // do the integration pauseH
 
-//  for (i=0; i<itime; i++) 
+//  for (i=0; i<itime; i++)
 //  {
 //    digitalWriteFast(aclkPin, HIGH);  // PORTA = 0x40;
 //    clockHigh
@@ -379,12 +379,12 @@ delayNanoseconds(120); // ADC settling time
 //    rawadc = (rawadc >> 3);  // divide by 8
 //    rawadc &= 0xff; // truncate top bit
 //rawadc = (rawadc >> 4);  // divide by 16
-    pixel[i] =  (uint8_t) rawadc; 
+    pixel[i] =  (uint8_t) rawadc;
     // clock out the next pixel
     digitalWriteFast(aclkPin, HIGH);  // PORTA = 0x40; // SI = 0, CLK = 1
     clockHigh
     digitalWriteFast(aclkPin, LOW);  // PORTA = 0x00; // SI = 0, CLK = 0
-    delayNanoseconds(120); 
+    delayNanoseconds(120);
     sei();
   }
   // extra clock at the end
@@ -392,7 +392,7 @@ delayNanoseconds(120); // ADC settling time
   clockDelay
   digitalWriteFast(aclkPin, LOW);   // PORTA = 0x00; // SI = 0, CLK = 0
  // clockDelay
-  
+ 
 //  digitalWriteFast(atestPin, LOW);  //PORTB &= 0xfb; //f
    
 //  for (i=0; i<123; i++) // filter results - can't do last 5
@@ -406,13 +406,13 @@ delayNanoseconds(120); // ADC settling time
 // ===  S E N D  I M A G E ====
 // ============================
 
-void sendImage(void) 
+void sendImage(void)
 {
   uint16_t i;
   if (imageTransmit)
   {  
    Serial.print("$ID,"); //  xputs(PSTR("$ID,"));
-    for (i=0; i<128; i++) 
+    for (i=0; i<128; i++)
     {
        if( binaryImage)   // normal image transfer
        {
@@ -443,39 +443,39 @@ void sendImage(void)
 // === T H R E S H O L D ===
 // =========================
 
-void threshold(uint8_t thValue) 
+void threshold(uint8_t thValue)
 {
   uint16_t i;
   uint8_t gap;
-  
+ 
   gapCount = 0;        //number of gaps detected
   gap = 0;             //controls whether we are searching for the end of a found gap
-  
-  for (i = 0; i < 128; i++) 
+ 
+  for (i = 0; i < 128; i++)
   {  
     if (gap)
     {   //finding the end of a gap
       if (pixel[127-i] >= thValue) //Reversed array by R.Hormigo to follow reversed sensor, needed for matlab to read correctly
       {
-        th[i] = 1;               //th[i] set to 1 if pixel is not inside the gap (end boundary is set to 1) 
-        gapEnd[gapCount] = 127 - i; //Reversed gate position by M.Hughes, needed for correct position
+        th[i] = 1;               //th[i] set to 1 if pixel is not inside the gap (end boundary is set to 1)
+        gapEnd[gapCount] = i;
         if ((gapCount < MAXGAPS) && (gapEnd[gapCount] - gapStart[gapCount] > MINGAPWIDTH))  
           gapCount++;          //search for next gap
         gap = 0;
       }
-      else 
+      else
       {
         th[i] = 0;
       }
-    } 
-    else 
+    }
+    else
     {                     //finding the start of a gap
       if (pixel[127-i] <= (thValue))   //Reversed array by R.Hormigo to follow reversed sensor, needed for matlab to read correctly
       {
-        th[i] = 0;         
-        gapStart[gapCount] = 127 - i;
+        th[i] = 0;        
+        gapStart[gapCount] = i;
         gap = 1;               //search for end of gap in next i
-      } 
+      }
       else
       {
         th[i] = 1;            
@@ -494,16 +494,16 @@ void threshold(uint8_t thValue)
 //  Serial.println(gapCount);
 //  Serial.println(gapStart[0]);
 //  Serial.println(gapEnd[0]);
-  
-  
+ 
+ 
   if (gap)
   {                  //if gap extends to end of array
     gapEnd[gapCount] = i;
     if (gapCount < MAXGAPS)
       gapCount++;
   }
-  
-  for (i=0; i<gapCount; i++) 
+ 
+  for (i=0; i<gapCount; i++)
   {
     gapCenter[i] = (gapStart[i] + gapEnd[i])>>1;      //add pixel locations, shift operator divides by 2
   }
@@ -518,33 +518,33 @@ void threshold(uint8_t thValue)
 void motorGo(uint8_t motor, uint8_t position)
 {
 //digitalWrite(enablePin, PWR_ON);
-  
+ 
   //motor 0 is JP5 - OCR1A - Gate Motor
   //motor 1 is JP6 - OCR1B - Sweeper Motor
   if (position > 100) //Position has a range of 0-100%
     position = 100;
-  if (motor == GATEMOTOR) 
+  if (motor == GATEMOTOR)
   {
     gate.write(position+36); //OCR1A = GATEMOTOROFF + (uint16_t)position * 20;
     //OCR1A = 2000 + (uint16_t)position * 20; //2000 is the initial position of the motor register
     gatePosition = position;
-  } 
-  else if (motor == SWEEPER) 
+  }
+  else if (motor == SWEEPER)
   {
 //Serial.println(position);
-    if (position == 0) 
+    if (position == 0)
     {
       //substitute SWPRMOTOROFF for 2000 - no idea why
       sweep.write(SWEEPOFF); // OCR1B = SWPRMOTOROFF + (uint16_t)99 * 20; //added the delays to make sure the sweeper actually sweeps and reaches both positions      
-      delay(100); //_delay_ms(2500);          //the delays may interfere with the timers in the program
+      delay(350); //_delay_ms(2500);          //the delays may interfere with the timers in the program
       sweep.write(SWEEPEND); //SWPRMOTOROFF + (uint16_t)0 * 20); //OCR1B = SWPRMOTOROFF + (uint16_t)0 * 20;
-      delay(100); //_delay_ms(2500);
+      delay(350); //_delay_ms(2500);
       sweep.write(SWEEPOFF); //SWPRMOTOROFF + (uint16_t)99 * 20); //OCR1B = SWPRMOTOROFF + (uint16_t)99 * 20;
     }
-    else if (position == 1) 
+    else if (position == 1)
     {
-      sweep.write( SWEEPCAL); //SWPRMOTOROFF + (uint16_t) 20 * 20); // OCR1B = ; //used to be (uint16_t) 10 * 20;         
-    }     
+      sweep.write( SWEEPCAL); //SWPRMOTOROFF + (uint16_t) 20 * 20); // OCR1B = ; //used to be (uint16_t) 10 * 20;        
+    }    
   }
 
 //digitalWrite(enablePin, PWR_OFF);  
@@ -562,7 +562,7 @@ void motorGo(uint8_t motor, uint8_t position)
 //
 //void triggerTimerCB(uint8_t arg) {
 //  startTimer(triggerTimer, 16, triggerTimerCB, 0);
-//  PORTB |= 0x02; 
+//  PORTB |= 0x02;
 //  triggerCnt++;
 //  if (triggerCnt == 3) {
 //    triggerCnt = 0;
@@ -578,7 +578,7 @@ void motorGo(uint8_t motor, uint8_t position)
 void triggerTimerCB()
 {
 static boolean tp = false;
-   if( tp ) 
+   if( tp )
    {
       digitalWriteFast( timerPin, HIGH);
       tp = false;
@@ -588,7 +588,7 @@ static boolean tp = false;
       digitalWriteFast( timerPin, LOW);    
       tp = true;
    }
-      
+     
    triggerCnt++;
    if( triggerCnt >= 3) //3
    {
@@ -625,13 +625,13 @@ void initDAC( void)
 //------------------------IR Lighting Control--------------------------//
 //using the TLV5638CD DAC, which needs to be reverse logic for the BuckPucks. When it's high the BuckPucks will be off.
 //Data is transferred in two Bytes to the TLV5638CD.
-void lights(uint8_t status, uint32_t intensity) 
+void lights(uint8_t status, uint32_t intensity)
 { //status == 1 then front, status == 2 then back
   uint32_t valB, val1, valA, val;
   //intensity = 100-intensity; //block of code that allows outA and outB to be set using a variable intensity set by the user
   //intensity = (100-intensity)*40;
-  
-// 
+ 
+//
 // intensity = (22.12*(100-intensity)) + 1207;
 //  
 
@@ -644,7 +644,7 @@ if( intensity != 0 )
 }
 else
 {
-  val = 4095; // full off 
+  val = 4095; // full off
 }
 
 //  val = intensity >> 8;
@@ -658,8 +658,8 @@ else
 
   SPI.beginTransaction(DAC);
   digitalWriteFast(csPin,LOW);   // select DAC  
-  if (status == 1) 
-    SPI.transfer((val >> 8) | 0xc0); 
+  if (status == 1)
+    SPI.transfer((val >> 8) | 0xc0);
   else
     SPI.transfer((val >> 8) | 0x40);
   SPI.transfer(val & 0xff);
@@ -677,19 +677,19 @@ void initDAC( void)
    digitalWriteFast(csPin,LOW);   // select DAC  
    SPI.transfer(0x28);            // sw power-on reset
    SPI.transfer16(0x0001);      
-   digitalWriteFast(csPin,HIGH);  // stop transmitting   
+   digitalWriteFast(csPin,HIGH);  // stop transmitting  
    SPI.endTransaction();
-  
+ 
    // turn on internal references on DACs
    SPI.beginTransaction(DAC);
-   digitalWriteFast(csPin,LOW);   // select DAC   
+   digitalWriteFast(csPin,LOW);   // select DAC  
    SPI.transfer(0x38);            // enable reference  xx11 1xxx xxxx xxx1
    SPI.transfer16(0x0001);      
-   digitalWriteFast(csPin,HIGH);  // stop transmitting   
+   digitalWriteFast(csPin,HIGH);  // stop transmitting  
    SPI.endTransaction();
 }
 
-void lights(uint8_t color, uint32_t intensity) 
+void lights(uint8_t color, uint32_t intensity)
 { //color: 1 = RED, 2 = IR, 3 is aux, intensity is 0-100%
   // but on prototype IR and RED reversed - use defines for CHRimson nd IR
    if( intensity > 100) intensity = 100;
@@ -706,17 +706,17 @@ void lights(uint8_t color, uint32_t intensity)
    // in case DAC was powered on after CPU
       // turn on internal references on DACs
    SPI.beginTransaction(DAC);
-   digitalWriteFast(csPin,LOW);   // select DAC   
+   digitalWriteFast(csPin,LOW);   // select DAC  
    SPI.transfer(0x38);            // enable reference  xx11 1xxx xxxx xxx1
    SPI.transfer16(0x0001);      
-   digitalWriteFast(csPin,HIGH);  // stop transmitting   
+   digitalWriteFast(csPin,HIGH);  // stop transmitting  
    SPI.endTransaction();
    
    SPI.beginTransaction(DAC);
    digitalWriteFast(csPin,LOW);  // select DAC
-   SPI.transfer( 0x18 | color);        // write and update DAC xx01 1aaa                     
-   SPI.transfer16( value << 4);       
-   digitalWriteFast( csPin,HIGH);  // stop transmitting   
+   SPI.transfer( 0x18 | color);        // write and update DAC xx01 1aaa                    
+   SPI.transfer16( value << 4);      
+   digitalWriteFast( csPin,HIGH);  // stop transmitting  
    SPI.endTransaction();
 
    if( color == (CHR-1))   // crimson monitor
@@ -738,7 +738,7 @@ void lights(uint8_t color, uint32_t intensity)
 void onePulseTimerCB()
 {
    onePulseTimer.end();
-   lights(CHR,0);   
+   lights(CHR,0);  
 }
 
 // ===============================
@@ -777,8 +777,8 @@ void onePulseTimerCB()
 //    if(rampVal>maxIntensity) //checks my intensity
 //    {
 //      rampVal = maxIntensity;
-//    }     
-//     
+//    }    
+//    
 //    if(tempDbl < ramp_width)
 //    {
 //      rampVal = temp;
@@ -835,10 +835,10 @@ void onePulseTimerCB()
 //  feedback = (uint16_t)OCR2A;
 
 void coolerControl(uint8_t status, uint8_t intensity, uint8_t diffTemp)  //status 1 is on, status 0 is off
-{ 
+{
 uint16_t peltierPWM = 0;
  
-  if (status == 1 && diffTemp <= 30) 
+  if (status == 1 && diffTemp <= 30)
   {
      peltierPWM = (diffTemp+60)*255/90;
   }
@@ -850,17 +850,17 @@ uint16_t peltierPWM = 0;
   {
      peltierPWM = (60-diffTemp)*255/90;
   }
-  else if (status == 2 && diffTemp > 60 ) 
+  else if (status == 2 && diffTemp > 60 )
   {
      peltierPWM = 0;
   }
   analogWrite( peltierPin, peltierPWM );
-  
+ 
   feedback = peltierPWM;
    
   if (status == 1 || status == 2)
   {
-    if (feedback != oldfeedback && feedback != 0) 
+    if (feedback != oldfeedback && feedback != 0)
     {
       //xprintf(PSTR("$FB,%u\r\n"), feedback);
       oldfeedback = feedback;
@@ -873,8 +873,8 @@ uint16_t peltierPWM = 0;
        Serial.print( diffTemp);
        Serial.print( " PWM:");
        Serial.println(peltierPWM);
-    }   
-    #endif   
+    }  
+    #endif  
   }
 }
 
@@ -893,7 +893,7 @@ float readTemp(){
   byte LeastSigByte = Wire.read();             // Now Read the second byte this is the LSB
 
   // Being a 12 bit integer use 2's compliment for negative temperature values
-  int TempSum = (((MostSigByte << 8) | LeastSigByte) >> 4); 
+  int TempSum = (((MostSigByte << 8) | LeastSigByte) >> 4);
   // From Datasheet the TMP75 has a quantisation value of 0.0625 degreesC per bit
   float temp = (TempSum*0.0625);
 //  #ifdef DEBUG
@@ -914,16 +914,16 @@ uint8_t thValid = 0;
 
 int8_t getTH(uint16_t *H, uint16_t *T)
 {
-   if (thValid) 
+   if (thValid)
    {
         *H = humidityNow;
         *T = tempNow;
 //      xprintf(PSTR("Humidity/Temp/in = %d %d \n"), humidity, temp);
-//      xprintf(PSTR("Humidity/Temp/in = %d %d \n"), H, T);       
+//      xprintf(PSTR("Humidity/Temp/in = %d %d \n"), H, T);      
         thValid = 0;
       return 0;
     }
-    else 
+    else
     {
         return 1;
     }
@@ -941,7 +941,7 @@ void processTH(void)
 //uint8_t i;
 char in = Serial1.read();
 
-    if (in == 'H') 
+    if (in == 'H')
     {
       // new data string from the sensor
       indexTH = 0;
@@ -950,22 +950,22 @@ char in = Serial1.read();
     }
     else if (stateTH > 0)
     {
-      if (in == '\r') 
+      if (in == '\r')
       {
         stateTH = 0;
        // process the data (format: Hxxx.x Tsxx.x<cr>)
        // first some sanity checking (pretty lame though, only checks to see if the H & T is in the buffer at the right place)
-        if ((buff[0] == 'H') && (buff[7] == 'T')) 
+        if ((buff[0] == 'H') && (buff[7] == 'T'))
         {
           humidityNow = ((buff[2] - 0x30) * 100) + ((buff[3] - 0x30) * 10) + (buff[5] - 0x30);
-          tempNow = ((buff[9] - 0x30) * 100) + ((buff[10] - 0x30) * 10) + ((buff[12]) - 0x30); 
+          tempNow = ((buff[9] - 0x30) * 100) + ((buff[10] - 0x30) * 10) + ((buff[12]) - 0x30);
         // check the sign and flip if needed
           if (buff[8] == '-')
             tempNow = -tempNow;
         // indicate we have valid data
           thValid = 1;
         }
-    } 
+    }
     else
     {
         buff[indexTH++] = in;
@@ -1000,8 +1000,8 @@ void findGate(void)
     Serial.print(",");
     Serial.print(end[0]);
     Serial.print(",");
-    Serial.print(gap);   
-    Serial.print("\r\n");     
+    Serial.print(gap);  
+    Serial.print("\r\n");    
    
     //eeprom_write_word(0, start[0]);
     //eeprom_busy_wait();
@@ -1026,8 +1026,8 @@ void flyRelease(void)
   int thCnt = 0;
   boolean inGate = false;
   int i;
-  
-  if (flyState[0] == OPENED) 
+ 
+  if (flyState[0] == OPENED)
   {
     for(i = 0; i < start[0]; i++ )
     {
@@ -1047,27 +1047,27 @@ void flyRelease(void)
       //gateTimeout[0] = 0;
       Serial.print("$GE,1,B\r\n");
       flyCount++;
-      if (countTransmit) 
+      if (countTransmit)
       {
         Serial.print("$FC,");
         Serial.print( flyCount);
         Serial.print("\r\n");
       }
-    }   
+    }  
   } // endif fly state opened
-} 
+}
 
 void flyReleaseORG(void)
 {
-  if (flyState[0] == OPENED) 
+  if (flyState[0] == OPENED)
   {
     gotFly = 1;   //This is a flag that tells us if there is a fly in the gap.
-    for (i=end[0]; i<=end[0]+gap; i++) 
+    for (i=end[0]; i<=end[0]+gap; i++)
     {
       if (th[i] == 1)
       {
         gotFly = 0;
-      }         
+      }        
     }
     if (gotFly == 1)
     {
@@ -1078,15 +1078,15 @@ void flyReleaseORG(void)
       //gateTimeout[0] = 0;
       Serial.print("$GE,1,B\r\n");
       flyCount++;
-      if (countTransmit) 
+      if (countTransmit)
       {
         Serial.print("$FC,");
         Serial.print( flyCount);
         Serial.print("\r\n");
       }
-    }   
+    }  
   } // endif fly state opened
-} 
+}
 
 
 void flyReleasePCBC(void)
@@ -1098,11 +1098,11 @@ void flyReleasePCBC(void)
       {
         if (gapStart[i] > end[0]+gap)
         {
-            Serial.println("$TS,1\r\n");               
+            Serial.println("$TS,1\r\n");              
         // yes, we have something after gate 1 so close gate 1
         // but make sure there is no fly under the gate
             gotFly = 0;
-           for (j=start[0]; j<end[0]; j++) 
+           for (j=start[0]; j<end[0]; j++)
            {
               if (th[j] == 0)
                 gotFly = 1;
@@ -1115,7 +1115,7 @@ void flyReleasePCBC(void)
               //gateTimeout[0] = 0;
               Serial.println("$GE,1,B\r\n");
               flyCount++;
-              if (countTransmit) 
+              if (countTransmit)
               {
                  Serial.print("$FC");
                  Serial.println(flyCount);
@@ -1131,30 +1131,30 @@ void flyReleasePCBC(void)
 
 // ==================
 // ===  S E T U P ===
-// ================== 
+// ==================
 
-void setup() 
+void setup()
 {
-    pinMode(enablePin, OUTPUT);   
+    pinMode(enablePin, OUTPUT);  
     digitalWrite(enablePin, PWR_OFF);  // first thing - be sure power is disabled
 
-    pinMode(wakePin, OUTPUT);   
-    digitalWrite(wakePin, PWR_OFF);  // first thing - be sure power is disabled 
+    pinMode(wakePin, OUTPUT);  
+    digitalWrite(wakePin, PWR_OFF);  // first thing - be sure power is disabled
    
     pinMode(csPin, OUTPUT);
     digitalWrite(csPin, HIGH);
 
     pinMode(asyncPin, OUTPUT);
     digitalWrite(asyncPin, LOW);
-    
+   
     pinMode(aclkPin, OUTPUT);
     digitalWrite(aclkPin, LOW);
-  
+ 
     pinMode(atestPin, OUTPUT);
     digitalWrite(atestPin, LOW);
    
     pinMode(timerPin, OUTPUT);
-    digitalWrite(timerPin, LOW); 
+    digitalWrite(timerPin, LOW);
    
     pinMode(monitorPin, OUTPUT);
     digitalWrite(monitorPin, LOW);
@@ -1168,7 +1168,7 @@ void setup()
     lights(CHR,0);
  //   lights(3,0);
 
-    
+   
    digitalWrite(enablePin, PWR_ON);  // power up LEDs
      
    digitalWriteFast(atestPin, HIGH);  
@@ -1179,15 +1179,15 @@ void setup()
 
       // from: https://playground.arduino.cc/Main/TMP75I2CThermometerCode/
 
-    Wire.begin(); 
+    Wire.begin();
     Wire.beginTransmission(TMP75_Address);       // Address the TMP75 sensor
-    Wire.write( 0x01);                           // Address the Configuration register 
-    Wire.write(0x40); //(B01100000);                       // Set the temperature resolution 
+    Wire.write( 0x01);                           // Address the Configuration register
+    Wire.write(0x40); //(B01100000);                       // Set the temperature resolution
     Wire.endTransmission();                      // Stop transmitting    
     Wire.beginTransmission(TMP75_Address);       // Address the TMP75 sensor
-    Wire.write(0x00);                            // Address the Temperature register 
-    Wire.endTransmission();                      // Stop transmitting 
-    
+    Wire.write(0x00);                            // Address the Temperature register
+    Wire.endTransmission();                      // Stop transmitting
+   
     sweep.attach(sweepPin);  
     gate.attach(gatePin);
 
@@ -1224,7 +1224,7 @@ void setup()
 //    pixel[15] = 12;
 //
 //    for( int i = 0; i < 10; i++ )
-//    { 
+//    {
 //      Serial.print(pixel[i]);
 //      Serial.print(" ");
 //      pixel[i] = median(i);
@@ -1260,7 +1260,7 @@ void setup()
   coolerIntensity = 50;
   rampVal = 0;
   i = 0;
-  
+ 
   //Pulse Generator Initiators
   /*****************************************************/
   //run = 0;
@@ -1271,7 +1271,7 @@ void setup()
     tStamp[i] = 0;    
     state[i] = 0;
   }
-    
+   
    Serial.print("$FR,Fly Sorter - Firmware version: ");
    Serial.print(VERSION);
    Serial.print("\r\n");
@@ -1284,10 +1284,10 @@ void setup()
 //  startTimer(triggerTimer, 16, triggerTimerCB, 0);
 //  motorTimer = allocateTimer();
 //  startTimer(motorTimer, 2, motorTimerCB, 0);
-//  motorTimer.begin( motorTimerCB, 2000); 
-  
+//  motorTimer.begin( motorTimerCB, 2000);
+ 
   ////actionTimer = allocateTimer();
-  
+ 
  // xfunc_out = (void (*)(char))uart_put;
  
   start[0] = 94;
@@ -1307,29 +1307,29 @@ void setup()
   Serial.print(block[0]);
   Serial.print("\r\n");
    
-  //start motor in open position 
-//  flyState[0] = OPENED; 
-//  motorGo(GATE1, open[0]);   
+  //start motor in open position
+//  flyState[0] = OPENED;
+//  motorGo(GATE1, open[0]);  
 //  Serial.print("$GE,1,O\r\n");
 
-  flyState[0] = CLOSED; 
-  motorGo(GATE1, block[0]);   
+  flyState[0] = CLOSED;
+  motorGo(GATE1, block[0]);  
   Serial.print("$GE,1,B\r\n");
 
 //  sweep.write(60);
 
-//for(uint8_t pos = 10; pos < 170; pos += 1)  // goes from 10 degrees to 170 degrees 
-//{                                  // in steps of 1 degree 
-//    sweep.write(pos);              // tell servo to go to position in variable 'pos' 
-//    delay(10);                       // waits 15ms for the servo to reach the position 
-//} 
+//for(uint8_t pos = 10; pos < 170; pos += 1)  // goes from 10 degrees to 170 degrees
+//{                                  // in steps of 1 degree
+//    sweep.write(pos);              // tell servo to go to position in variable 'pos'
+//    delay(10);                       // waits 15ms for the servo to reach the position
+//}
 
 
 //  lightTimer.begin(lightTimerCB, 1024);  // 1.024 msec timer for pulse and ramp
-  
-  
+ 
+ 
   //Communication w/ Matlab via characters
-  //Enable Interrupt   
+  //Enable Interrupt  
   sei();
 
 } // end setup
@@ -1346,7 +1346,7 @@ float fslope;
 // === L O O P ===
 // ===============
 
-void loop() 
+void loop()
 {
 
 //    if (run != RUNISOFF)
@@ -1368,7 +1368,7 @@ void loop()
 //             Serial.print(tStamp[pulseIndex]);
 //             Serial.print(" ");
 //             Serial.println(state[pulseIndex]);
-             pulseIndex++; 
+             pulseIndex++;
           }                    
        }
        else
@@ -1379,22 +1379,22 @@ void loop()
        }
     }
     else if ( run == RUNRAMP )  
-    {   // use msec timer. 
+    {   // use msec timer.
       if( nextPulse >= 1 )  // check every milli, but other things may slow the loop down
-      {                     // (looking at you temp/humidity). That's ok we will use the current 
+      {                     // (looking at you temp/humidity). That's ok we will use the current
          rampCount += nextPulse;   // value to set the new intensity
          if( rampCount <= ramp_width)  // inc until end of ramp time
-         { 
+         {
             lastIntensity = intensity;
             intensity = intercept + (int16_t)(rampCount*fslope);
             if( intensity != lastIntensity) // only update if things have changed
             {
-              if( intensity > maxIntensity ) 
+              if( intensity > maxIntensity )
                 lights( CHR, maxIntensity );
-              else 
+              else
                 lights( CHR, intensity );  
             }    
-         }   
+         }  
          else if (rampCount >= duration)  // flat area - wait until end, then kill the lights
          {
             lights( CHR, 0 );
@@ -1414,10 +1414,10 @@ void loop()
     {
         c = Serial.read();
         if ((c == '\r') || (c == 0xff)) crFlag = 1;
-        if (((c == '\b') || (c == 0x7f)) && (idx > 0)) 
+        if (((c == '\b') || (c == 0x7f)) && (idx > 0))
         {
           idx--;
-        } 
+        }
         else if ((c >= ' ') && (idx < sizeof(inputLine) - 1))
         {
           inputLine[idx++] = c;
@@ -1430,18 +1430,18 @@ void loop()
       inputLine[idx] = 0;
       idx  = 0;
       parse((char*)inputLine, argv);
-      if (strcmp(argv[0], "Z") == 0) 
-      {                   
-        if (strcmp(argv[1], "p") == 0) 
+      if (strcmp(argv[0], "Z") == 0)
+      {                  
+        if (strcmp(argv[1], "p") == 0)
         {
           run = RUNISOFF;
           ptr1 = &tStamp[0];
           ptr2 = &state[0];
-          xatoi(&argv[2], &arg1);       
-          tabSize = (uint16_t)arg1;               
+          xatoi(&argv[2], &arg1);      
+          tabSize = (uint16_t)arg1;              
           //xprintf(PSTR("arg1,%u\r\n"),arg1);
     //      getData(tStamp,state);
-          
+         
           for(i=0;i<tabSize;i++)
           {
             xatoi(&argv[i*2+3], &arg2);
@@ -1450,9 +1450,9 @@ void loop()
             state[i] = arg3;
             //xprintf(PSTR("state,%u\r\n"),state[i]);
           }
-          duration = tStamp[tabSize - 1];           
-        } 
-        else if (strcmp(argv[1], "r") == 0) 
+          duration = tStamp[tabSize - 1];          
+        }
+        else if (strcmp(argv[1], "r") == 0)
         {
           run = RUNISOFF;
           xatoi(&argv[2], &arg1); //slope (*100)
@@ -1471,11 +1471,11 @@ void loop()
 //          Serial.print(" ");
 //          Serial.print(intercept);
 //          Serial.print(" ");
-//          Serial.print(ramp_width);   
+//          Serial.print(ramp_width);  
 //          Serial.print(" ");
 //          Serial.print(duration);
 //          Serial.print(" ");
-//          Serial.println(maxIntensity);         
+//          Serial.println(maxIntensity);        
                          
           //xprintf(PSTR("%f\r\n"),slope);                            
          /*} else if (strcmp(argv[1], "c") == 0) {
@@ -1483,25 +1483,25 @@ void loop()
          } else if (strcmp(argv[1], "m") == 0) {
           //xatoi(argv[2], &arg1);
           trgMode = 1;*/
-        } 
-        else if (strcmp(argv[1], "v") == 0) 
+        }
+        else if (strcmp(argv[1], "v") == 0)
         {
           trgMode = 0;
           Serial.print("on,1\r\n");
-          rampCount = 0;       
+          rampCount = 0;      
           run = RUNRAMP;
-          lights(CHR, intercept);      // set initial brightness   
+          lights(CHR, intercept);      // set initial brightness  
           nextPulse = 0;
-        } 
-        else if (strcmp(argv[1], "s") == 0) 
+        }
+        else if (strcmp(argv[1], "s") == 0)
         {
           trgMode = 0;
-//          Serial.print("on,1\r\n"); 
+//          Serial.print("on,1\r\n");
           Serial.print("on,1\r\n");
           run = RUNPULSE;
           pulseIndex = 0;
           nextPulse = 0;
-        } 
+        }
         else if (strcmp(argv[1], "t") == 0)
         {
 //          Serial.print("off,1\r\n");
@@ -1510,8 +1510,8 @@ void loop()
         }
       } // endif Z
       else if (strcmp(argv[0], "R") == 0)                      //Fly release function
-      { 
-        if (runGates == 0) 
+      {
+        if (runGates == 0)
         {
           flyState[0] = OPENED;
           //gateTimeout[0] = 0;
@@ -1524,23 +1524,23 @@ void loop()
         }
       } // endif R
       else if (strcmp(argv[0], "V") == 0)                     //Image transfer
-      {   
+      {  
 //?       PORTB |= 0x09;
         imageTransmit = 1;
         binaryImage = true;
 //?        PORTB &= 0xfe;
-      } 
+      }
       else if (strcmp(argv[0], "A") == 0)                     //image transfer in ASCII art
-      {   
+      {  
         imageTransmit = 1;
         binaryImage = false;
       }
-      else if (strcmp(argv[0], "N") == 0)                     //Stop image transfer 
-      {   
+      else if (strcmp(argv[0], "N") == 0)                     //Stop image transfer
+      {  
         imageTransmit = 0;
-      } 
+      }
       else if (strcmp(argv[0], "T") == 0)                     //Fly Count recording
-      {   
+      {  
         //seconds = 0;
         flyCount = 0;
         countTransmit = 1;
@@ -1555,42 +1555,42 @@ void loop()
         motorGo(GATE1, open[0]);
         Serial.print("$GE,1,O\r\n");
         runGates = 0;
-      } 
+      }
       else if (strcmp(argv[0], "C") == 0)                      //Closes Gate
       {  
         motorGo(GATE1, CLOSEDPOS);
         Serial.print("$GE,1,C\r\n");
         runGates = 0;
-      } 
-      else if (strcmp(argv[0], "B") == 0)                     //Blocks Gate   
-      {   
+      }
+      else if (strcmp(argv[0], "B") == 0)                     //Blocks Gate  
+      {  
         motorGo(GATE1, block[0]);
         Serial.print("$GE,1,B\r\n");
         runGates = 0;
-      } 
+      }
       else if (strcmp(argv[0], "H") == 0)                     //Cleaning Gate
-      {   
+      {  
         motorGo(GATE1,CLEANING);
         Serial.print("$GE,1,H\r\n");
         runGates = 0;        
-      } 
+      }
       else if (strcmp(argv[0], "E") == 0)                     //Shadow Threshold for detecting flies from noise
       {  
         xatoi(&argv[1], &arg1);
         shadow = (int8_t)arg1;
-      } 
+      }
       else if (strcmp(argv[0], "K") == 0)                     //Gap Threshold for after the gate to allow fly to escape and not get squished
-      {   
+      {  
         xatoi(&argv[1], &arg1);
         gap = (int8_t)arg1;
-      } 
+      }
       else if (strcmp(argv[0], "Q") == 0)                     //Set Cooler temp trigger
       {  
         xatoi(&argv[1], &arg1);
         tempCooler = (int8_t)arg1*10;
-      } 
+      }
       else if (strcmp(argv[0], "I") == 0)                     //Setting IR  lights
-      {   
+      {  
         xatoi(&argv[1], &arg1);
         lightIntensity = (uint16_t)arg1;  
         lights(IR,lightIntensity);
@@ -1599,7 +1599,7 @@ void loop()
       {  
         xatoi(&argv[1], &arg1);
         lightIntensity = (uint16_t)arg1;
-        lights(CHR,lightIntensity);       
+        lights(CHR,lightIntensity);      
       //} else if (strcmp(argv[0], "G") == 0) {   //Running
         //if (runGates == 0) {
           //flyState[0] = OPENED;
@@ -1610,15 +1610,15 @@ void loop()
           //flyCount = 0;
         //  runGates = 1;
         //}
-      } 
+      }
       else if (strcmp(argv[0], "S") == 0)                     //Sweeper command
       {  
         motorGo(SWEEPER, 0);
-      } 
+      }
       else if (strcmp(argv[0], "J") == 0)                      //Sweeper calibrate command
       {  
         motorGo(SWEEPER, 1);
-      } 
+      }
       else if( strcmp(argv[0], "w") == 0)
       {
          xatoi(&argv[1], &arg1);
@@ -1627,12 +1627,12 @@ void loop()
       else if (strcmp(argv[0], "F") == 0)                      //find gate
       {  
           findGate();
-      } 
+      }
       else if (strcmp(argv[0], "D") == 0)                      //set open,blocked with slider
-      {   
+      {  
         xatoi(&argv[1], &arg1);
         xatoi(&argv[2], &arg2);
-        if ((arg1 >= 0) && (arg1 <= 100) && (arg2 >= 0) && (arg2 <= 100)) 
+        if ((arg1 >= 0) && (arg1 <= 100) && (arg2 >= 0) && (arg2 <= 100))
         {
           open[0] = (uint16_t)arg1;
           block[0] = (uint16_t)arg2;
@@ -1653,8 +1653,8 @@ void loop()
       //  }
       //} else if (strcmp(argv[0], "int") == 0) {
       //  xprintf(PSTR("Integration = %u\n"), itime);
-      } 
-      else if (strcmp(argv[0], "G") == 0) 
+      }
+      else if (strcmp(argv[0], "G") == 0)
       {
          xatoi(&argv[1], &arg1);
          uint8_t pos = (uint8_t) arg1;
@@ -1665,7 +1665,7 @@ void loop()
       else if (strcmp(argv[0], "h") == 0)                     // added for temp and humidity debug  
       {
         getTH(&humidity,&temperature);
-        if (humidity != 0 && temperature != 0) 
+        if (humidity != 0 && temperature != 0)
         {
           Serial.print("$TD,");
           Serial.print(humidity);
@@ -1686,9 +1686,9 @@ void loop()
           Serial.print("$FR,Fly Sorter - Firmware version: ");
           Serial.println(VERSION);
           Serial.print("shadow:");
-    		  Serial.println(shadow);
+     Serial.println(shadow);
           Serial.print("gap:");
-    		  Serial.println(gap);
+     Serial.println(gap);
           Serial.print("set temp:");
           Serial.println(tempCooler);
           Serial.print("open: ");
@@ -1702,27 +1702,27 @@ void loop()
       {
           initDAC();  
       }
-      else if (strcmp(argv[0], "P") == 0) 
+      else if (strcmp(argv[0], "P") == 0)
       {  
      
          xatoi(&argv[1], &arg1);
          lightIntensity = (uint16_t)arg1;
          xatoi(&argv[2], &arg2);
          uint16_t pulseMillis = (uint16_t) arg2;          
-         lights(CHR,lightIntensity); 
+         lights(CHR,lightIntensity);
          onePulseTimer.begin( onePulseTimerCB, pulseMillis * 1000 );  // IntervalTimer is in usec
-      }     
+      }    
       else if (strcmp(argv[0], "W") == 0) // run vibration motor
       {
           digitalWrite(wakePin, HIGH);
           delay(200);
           digitalWrite(wakePin, LOW);    
       }
-      else if (strcmp(argv[0], "G") == 0) 
+      else if (strcmp(argv[0], "G") == 0)
       {
          xatoi(&argv[1], &arg1);
          motorGo(GATE1, arg1);
-         runGates = 0; 
+         runGates = 0;
       }
       else if (strcmp(argv[0], "X") == 0 )  // binary image (after thresholding)
       {
@@ -1740,13 +1740,13 @@ void loop()
       {
           digitalWrite(enablePin, PWR_OFF);
       }
-      
-            
+     
+           
       // endif checking argv[0]
 
-      
+     
     } // endif got crflag
-      
+     
    // getTH(&humidity, &temperature);
     temperature = (int16_t)(readTemp() * 10);
     //xprintf(PSTR("Humidity/Temp = %d %d \n"), humidity, temp);
@@ -1760,54 +1760,51 @@ void loop()
        Serial.print( tempCooler);
        Serial.print( "  ");
 
-    }   
-    #endif       
-    
+    }  
+    #endif      
+   
     if (temperature >= tempCooler)
-    {     
+    {    
       difftemperature = temperature - tempCooler;
       coolerControl(1,coolerIntensity,difftemperature);
       //xprintf(PSTR("$FB,%u\r\n"),feedback);
-    } 
-    else if (temperature < tempCooler) 
+    }
+    else if (temperature < tempCooler)
     {
       difftemperature = tempCooler - temperature;
       coolerControl(2,coolerIntensity,difftemperature);
-    }     
+    }    
     //} else {
     //  coolerControl(0,coolerIntensity,difftemp);
     //  fan = 0;
     //}
     oldtemp = temperature;
          
-    if (imageCapture) 
+    if (imageCapture)
     {
       imageCapture = 0;
       getImage();
       threshold(shadow);
-      sendImage();   
-      if( binaryImage && imageTransmit ) // don't send this with ASCII art 
+      sendImage();  
+      if( binaryImage && imageTransmit ) // don't send this with ASCII art
       {
         getTH(&humidity,&temperature);
-        if( (humidity != 0) && (temperature != 0) ) 
+        if( (humidity != 0) && (temperature != 0) )
         {
            Serial.print("$TD,");
            Serial.print(humidity);
            Serial.print(",");
            Serial.print(temperature);
            Serial.print("\r\n");
-           Serial.send_now(); 
-        }         
-      } 
+           Serial.send_now();
+        }        
+      }
       if (runGates)
       {
           flyRelease();        
       }
 
-    } // endif image 
-
-
-}// end loop
+    } // endif image
 
 
 }// end loop
