@@ -1675,7 +1675,7 @@ disp('camStartupFun passed')
             MCUvar_gateBound = [];
         end
         if ~isempty(MCUvar_gateData)
-            MCUvar_gateData(MCUvar_gateData > 60) = 127;
+            MCUvar_gateData(MCUvar_gateData > 100) = 127;
             MCUvar_gateData = medfilt1(MCUvar_gateData);
             MCUvar_gateData(end) = 127;
             set(hPlotGate.data,'XData',(0:127),'YData',MCUvar_gateData(1:128)*2)
