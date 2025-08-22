@@ -1316,7 +1316,10 @@ void setup()
   motorGo(GATE1, block[0]);  
   Serial.print("$GE,1,B\r\n");
 
-//  sweep.write(60);
+  pinMode(SCLKPIn, OUTPUT);
+  digitalWrite(SCLKPIn, LOW);
+
+ //  sweep.write(60);
 
 //for(uint8_t pos = 10; pos < 170; pos += 1)  // goes from 10 degrees to 170 degrees
 //{                                  // in steps of 1 degree
@@ -1808,3 +1811,4 @@ void loop()
 
 
 }// end loop
+
